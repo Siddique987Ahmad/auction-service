@@ -1,5 +1,8 @@
-import { v4 as uuid } from "uuid";
-import AWS from 'aws-sdk'
+// import { v4 as uuid } from "uuid";
+// import AWS from 'aws-sdk'
+const { v4: uuid } = require('uuid');
+const AWS = require('aws-sdk');
+
 
 const dynamodb=new AWS.DynamoDB.DocumentClient()
 
@@ -13,16 +16,24 @@ async function createAuction(event, context) {
     createdAt:now.toISOString(),
   }
 
-  await dynamodb.put({
-    TableName:'AuctionsTable',
-    Item:auction,
-  }).promise()
-
-
-  return {
-    statusCode: 201,
-    body: JSON.stringify(auction),
-  };
+  try {
+    await dynamodb.put({
+      TableName:'AuctionsTable',
+      Item:auction,
+    }).promise()
+  
+  
+    return {
+      statusCode: 201,
+      body: JSON.stringify(auction),
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Error creating auction', error: error.message }),
+    };
+  }
 }
 
 module.exports.handler = createAuction;
